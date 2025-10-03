@@ -1,4 +1,4 @@
-import { FlashCardData } from "@/components/FlashCard";
+import { FlashCardData, AttemptHistory } from "@/components/FlashCard";
 
 // This will be populated from Notion API
 // For now, using sample data based on the structure you provided
@@ -9,6 +9,13 @@ export const sampleCards: FlashCardData[] = [
     leetcodeUrl: "https://leetcode.com/problems/roman-to-integer/",
     description: "Convert a Roman numeral string to an integer. Roman numerals are represented by seven symbols: I, V, X, L, C, D and M.",
     topic: "Hash Maps",
+    attempts: [
+      {
+        date: "2025-01-15T10:30:00Z",
+        timeTaken: 480,
+        solved: true,
+      },
+    ],
     code: `var romanToInt = function(s) {
     var values = {
         "I": 1,

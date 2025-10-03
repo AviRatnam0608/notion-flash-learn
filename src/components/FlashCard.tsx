@@ -7,6 +7,12 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Lightbulb, Code2 } from "lucide-react";
 
+export interface AttemptHistory {
+  date: string;
+  timeTaken: number;
+  solved: boolean;
+}
+
 export interface FlashCardData {
   id: string;
   title: string;
@@ -15,28 +21,34 @@ export interface FlashCardData {
   code: string;
   explanation: string;
   topic: string;
+  attempts?: AttemptHistory[];
 }
 
 interface FlashCardProps {
   data: FlashCardData;
+  currentTime: number;
 }
 
-export const FlashCard = ({ data }: FlashCardProps) => {
+export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showSolutionDialog, setShowSolutionDialog] = useState(false);
+  const [showTracking, setShowTracking] = useState(false);
+  const [attempts, setAttempts] = useState<AttemptHistory[]>(data.attempts || []);
 
-  // Parse explanation into steps (assumes numbered list format)
-  const parseSteps = (explanation: string): string[] => {
+  // Parse explanation into steps and add topic as first hint
+  const parseSteps = (explanation: string, topic: string): string[] => {
     const lines = explanation.split('\n').filter(line => line.trim());
-    const steps: string[] = [];
+    const steps: string[] = [`Topic: ${topic}`]; // Add topic as first hint
     let currentStepText = '';
+    let stepNumber = 1;
     
     for (const line of lines) {
       // Check if line starts with a number (1., 2., etc.)
       if (/^\d+\./.test(line.trim())) {
         if (currentStepText) {
-          steps.push(currentStepText.trim());
+          steps.push(`${stepNumber}. ${currentStepText.replace(/^\d+\.\s*/, '').trim()}`);
+          stepNumber++;
         }
         currentStepText = line;
       } else {
@@ -45,14 +57,37 @@ export const FlashCard = ({ data }: FlashCardProps) => {
     }
     
     if (currentStepText) {
-      steps.push(currentStepText.trim());
+      steps.push(`${stepNumber}. ${currentStepText.replace(/^\d+\.\s*/, '').trim()}`);
     }
     
     return steps;
   };
 
-  const explanationSteps = parseSteps(data.explanation);
+  const explanationSteps = parseSteps(data.explanation, data.topic);
   const totalSteps = explanationSteps.length;
+
+  const lastAttempt = attempts.length > 0 ? attempts[attempts.length - 1] : null;
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleMarkAttempt = (solved: boolean) => {
+    const newAttempt: AttemptHistory = {
+      date: new Date().toISOString(),
+      timeTaken: currentTime,
+      solved,
+    };
+    setAttempts([...attempts, newAttempt]);
+    setShowTracking(false);
+  };
 
   const handleFlip = () => {
     setIsFlipped(true);
@@ -94,9 +129,11 @@ export const FlashCard = ({ data }: FlashCardProps) => {
           }}
         >
           <div className="flex-1 flex flex-col justify-center space-y-6">
-            <Badge className="self-start bg-accent text-accent-foreground">
-              {data.topic}
-            </Badge>
+            {lastAttempt && (
+              <div className="text-sm text-muted-foreground">
+                Last attempt: {formatTime(lastAttempt.timeTaken)} ({lastAttempt.solved ? "Solved ✓" : "Not solved"})
+              </div>
+            )}
             {data.leetcodeUrl ? (
               <a
                 href={data.leetcodeUrl}
@@ -113,7 +150,7 @@ export const FlashCard = ({ data }: FlashCardProps) => {
               {data.description}
             </div>
           </div>
-          <div className="flex justify-center pt-8">
+          <div className="flex flex-col items-center gap-3 pt-8">
             <Button
               onClick={handleFlip}
               size="lg"
@@ -122,6 +159,43 @@ export const FlashCard = ({ data }: FlashCardProps) => {
               <Lightbulb className="w-5 h-5" />
               Get Hints
             </Button>
+            {!showTracking ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTracking(true)}
+                className="text-xs"
+              >
+                Track Progress
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleMarkAttempt(true)}
+                  className="text-xs"
+                >
+                  I Could Solve It ✓
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleMarkAttempt(false)}
+                  className="text-xs"
+                >
+                  I Could Not Solve It
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTracking(false)}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -138,9 +212,6 @@ export const FlashCard = ({ data }: FlashCardProps) => {
         >
           <div className="flex-1 space-y-6 overflow-y-auto">
             <div className="flex items-center justify-between">
-              <Badge className="bg-accent text-accent-foreground">
-                {data.topic}
-              </Badge>
               <h3 className="text-xl font-semibold">{data.title}</h3>
             </div>
 

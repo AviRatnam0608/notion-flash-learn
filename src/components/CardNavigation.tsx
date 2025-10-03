@@ -15,7 +15,7 @@ export const CardNavigation = ({
   onNext,
 }: CardNavigationProps) => {
   return (
-    <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
+    <div className="flex items-center justify-between w-full max-w-4xl mx-auto relative z-10">
       <Button
         onClick={onPrevious}
         disabled={currentIndex === 0}
