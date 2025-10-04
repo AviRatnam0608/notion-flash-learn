@@ -75,18 +75,20 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-flex-start space-y-6 pb-8">
+      <main className="flex-1 flex flex-col items-center justify-flex-start pb-8">
         <FlashCard
           data={cards[currentCardIndex]}
           key={currentCardIndex}
           currentTime={seconds}
         />
-        <CardNavigation
-          currentIndex={currentCardIndex}
-          totalCards={cards.length}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-        />
+        <div className="mt-8">
+          <CardNavigation
+            currentIndex={currentCardIndex}
+            totalCards={cards.length}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
+        </div>
       </main>
     </div>
   );
