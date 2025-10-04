@@ -83,7 +83,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-flex-start pb-8">
-        <div className="mb-6">
+        <div className="mb-6 w-full">
           <CardNavigation
             currentIndex={currentCardIndex}
             totalCards={cards.length}
