@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FlashCard } from "@/components/FlashCard";
 import { StudyTimer } from "@/components/StudyTimer";
 import { CardNavigation } from "@/components/CardNavigation";
+import { VoiceCoach } from "@/components/VoiceCoach";
 import { sampleCards } from "@/lib/notion";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
@@ -10,6 +11,7 @@ const Index = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
+  const [voiceCoachEnabled, setVoiceCoachEnabled] = useState(false);
   const cards = sampleCards;
 
   useEffect(() => {
@@ -60,6 +62,11 @@ const Index = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <VoiceCoach
+            currentCard={cards[currentCardIndex]}
+            isEnabled={voiceCoachEnabled}
+            onToggle={() => setVoiceCoachEnabled(!voiceCoachEnabled)}
+          />
           <StudyTimer
             seconds={seconds}
             isRunning={isRunning}

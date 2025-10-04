@@ -15,13 +15,13 @@ export const CardNavigation = ({
   onNext,
 }: CardNavigationProps) => {
   return (
-    <div className="flex items-center justify-between w-full max-w-4xl mx-auto relative z-10">
+    <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
       <Button
         onClick={onPrevious}
         disabled={currentIndex === 0}
         variant="outline"
         size="lg"
-        className="gap-2"
+        className="gap-2 disabled:opacity-50"
       >
         <ChevronLeft className="w-5 h-5" />
         Previous
@@ -48,7 +48,7 @@ export const CardNavigation = ({
         disabled={currentIndex === totalCards - 1}
         variant="outline"
         size="lg"
-        className="gap-2"
+        className="gap-2 disabled:opacity-50"
       >
         Next
         <ChevronRight className="w-5 h-5" />

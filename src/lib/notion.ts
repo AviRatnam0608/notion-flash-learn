@@ -1,5 +1,8 @@
 import { FlashCardData, AttemptHistory } from "@/components/FlashCard";
 
+// Re-export types for convenience
+export type { FlashCardData, AttemptHistory };
+
 // This will be populated from Notion API
 // For now, using sample data based on the structure you provided
 export const sampleCards: FlashCardData[] = [
