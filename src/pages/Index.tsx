@@ -54,10 +54,10 @@ const Index = () => {
       {/* Header */}
       <header className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">
+          <h1 className="text-3xl md:text-4xl font-bold text-white">
             LeetCode Flash Cards
           </h1>
-          <p className="text-base md:text-lg mt-1.5 opacity-80">
+          <p className="text-base md:text-lg mt-1.5 text-white/80">
             Practice active recall with your solutions
           </p>
         </div>

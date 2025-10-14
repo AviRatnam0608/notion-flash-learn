@@ -28,7 +28,7 @@ export const CardNavigation = ({
       </Button>
 
       <div className="text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-white font-medium">
           Card {currentIndex + 1} of {totalCards}
         </p>
         <div className="flex gap-1 mt-2">

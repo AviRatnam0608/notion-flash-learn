@@ -120,7 +120,7 @@ export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
       >
         {/* Front of card */}
         <Card
-          className={`absolute inset-0 backface-hidden min-h-[500px] p-8 flex flex-col justify-between shadow-lg ${
+          className={`absolute inset-0 backface-hidden min-h-[500px] px-8 pt-4 pb-8 flex flex-col justify-between shadow-lg ${
             isFlipped ? "invisible" : "visible"
           }`}
           style={{
@@ -201,7 +201,7 @@ export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
 
         {/* Back of card - Progressive Hints */}
         <Card
-          className={`absolute inset-0 backface-hidden min-h-[500px] p-8 flex flex-col justify-between shadow-lg ${
+          className={`absolute inset-0 backface-hidden min-h-[500px] px-8 pt-4 pb-8 flex flex-col justify-between shadow-lg ${
             !isFlipped ? "invisible" : "visible"
           }`}
           style={{

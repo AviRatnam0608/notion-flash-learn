@@ -36,7 +36,7 @@ export const StudyTimer = ({
   return (
     <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg">
       <Clock className="w-4 h-4 text-primary" />
-      <span className="font-mono text-base font-semibold min-w-[60px]">
+      <span className="font-mono text-base font-semibold min-w-[60px] text-white">
         {formatTime(seconds)}
       </span>
       <div className="flex items-center gap-1 border-l border-border pl-2">
