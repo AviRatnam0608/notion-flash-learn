@@ -106,16 +106,9 @@ export async function fetchCardsFromNotion(
   databaseId: string
 ): Promise<FlashCardData[]> {
   try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const { supabase } = await import('@/integrations/supabase/client');
     
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase credentials not found');
-      return sampleCards;
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Fetching cards from Notion database:', databaseId);
     
     const { data, error } = await supabase.functions.invoke('fetch-notion-cards', {
       body: { databaseId },
@@ -126,7 +119,8 @@ export async function fetchCardsFromNotion(
       return sampleCards;
     }
 
-    return data.flashcards || sampleCards;
+    console.log('Received data from Notion:', data);
+    return data?.flashcards || sampleCards;
   } catch (error) {
     console.error('Error in fetchCardsFromNotion:', error);
     return sampleCards;
