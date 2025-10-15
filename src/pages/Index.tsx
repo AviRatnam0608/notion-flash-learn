@@ -1,122 +1,94 @@
-import { useState, useEffect } from "react";
-import { FlashCard, FlashCardData } from "@/components/FlashCard";
-import { StudyTimer } from "@/components/StudyTimer";
-import { CardNavigation } from "@/components/CardNavigation";
-import { VoiceCoach } from "@/components/VoiceCoach";
-import { sampleCards, fetchCardsFromNotion } from "@/lib/notion";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Clock, Target, Zap } from "lucide-react";
 
 const Index = () => {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
-  const [voiceCoachEnabled, setVoiceCoachEnabled] = useState(false);
-  const [cards, setCards] = useState<FlashCardData[]>(sampleCards);
-  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Fetch cards from Notion on mount
-  useEffect(() => {
-    const loadCards = async () => {
-      setIsLoading(true);
-      // Format the database ID with dashes (UUID format)
-      const databaseId = "28c57d62-9295-80b7-b2fc-ff9f9322b8f9";
-      const fetchedCards = await fetchCardsFromNotion(databaseId);
-      setCards(fetchedCards);
-      setIsLoading(false);
-    };
-    loadCards();
-  }, []);
+  const studyModes = [
+    {
+      title: "Countdown Mode",
+      description: "Solve as many questions as you can",
+      icon: Clock,
+      options: [
+        { label: "15 minutes", minutes: 15 },
+        { label: "30 minutes", minutes: 30 },
+        { label: "45 minutes", minutes: 45 },
+      ],
+    },
+    {
+      title: "Quick Practice",
+      description: "Solve a fixed number of questions",
+      icon: Target,
+      options: [
+        { label: "3 questions", count: 3 },
+        { label: "5 questions", count: 5 },
+      ],
+    },
+  ];
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isRunning) {
-      interval = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning]);
-
-  const handleNext = () => {
-    if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentCardIndex > 0) {
-      setCurrentCardIndex(currentCardIndex - 1);
-    }
-  };
-
-  const handlePause = () => setIsRunning(false);
-  const handleResume = () => setIsRunning(true);
-  const handleStop = () => {
-    setIsRunning(false);
-    setSeconds(0);
-  };
-  const handleReset = () => {
-    setSeconds(0);
-    setIsRunning(true);
+  const handleModeSelect = (minutes?: number, count?: number) => {
+    const params = new URLSearchParams();
+    if (minutes) params.set("minutes", minutes.toString());
+    if (count) params.set("count", count.toString());
+    navigate(`/study?${params.toString()}`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-6 md:p-8">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">
-            LeetCode Flash Cards
-          </h1>
-          <p className="text-base md:text-lg mt-1.5 text-white/80">
-            Practice active recall with your solutions
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 md:p-8">
+      <div className="max-w-4xl w-full space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Zap className="w-12 h-12 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold text-white">
+              LeetCode Flash Cards
+            </h1>
+          </div>
+          <p className="text-lg md:text-xl text-white/80">
+            Choose your study mode and start practicing
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <VoiceCoach
-            currentCard={cards[currentCardIndex]}
-            isEnabled={voiceCoachEnabled}
-            onToggle={() => setVoiceCoachEnabled(!voiceCoachEnabled)}
-          />
-          <StudyTimer
-            seconds={seconds}
-            isRunning={isRunning}
-            onPause={handlePause}
-            onResume={handleResume}
-            onStop={handleStop}
-            onReset={handleReset}
-          />
-          <Button variant="outline" size="icon">
-            <Settings className="w-5 h-5" />
-          </Button>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-flex-start pb-8">
-        {isLoading ? (
-          <div className="text-white text-lg">Loading your flashcards from Notion...</div>
-        ) : (
-          <>
-            <div className="mb-6 w-full">
-              <CardNavigation
-                currentIndex={currentCardIndex}
-                totalCards={cards.length}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-              />
-            </div>
-            <FlashCard
-              data={cards[currentCardIndex]}
-              key={currentCardIndex}
-              currentTime={seconds}
-            />
-          </>
-        )}
-      </main>
+        {/* Study Mode Cards */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {studyModes.map((mode) => {
+            const Icon = mode.icon;
+            return (
+              <Card key={mode.title} className="bg-card/50 backdrop-blur border-white/10">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Icon className="w-6 h-6 text-primary" />
+                    <CardTitle className="text-2xl">{mode.title}</CardTitle>
+                  </div>
+                  <CardDescription className="text-base">
+                    {mode.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {mode.options.map((option) => (
+                    <Button
+                      key={option.label}
+                      onClick={() =>
+                        handleModeSelect(
+                          "minutes" in option ? option.minutes : undefined,
+                          "count" in option ? option.count : undefined
+                        )
+                      }
+                      className="w-full"
+                      size="lg"
+                      variant="outline"
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
