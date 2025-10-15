@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { FlashCard } from "@/components/FlashCard";
+import { FlashCard, FlashCardData } from "@/components/FlashCard";
 import { StudyTimer } from "@/components/StudyTimer";
 import { CardNavigation } from "@/components/CardNavigation";
 import { VoiceCoach } from "@/components/VoiceCoach";
-import { sampleCards } from "@/lib/notion";
+import { sampleCards, fetchCardsFromNotion } from "@/lib/notion";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 
@@ -12,7 +12,21 @@ const Index = () => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [voiceCoachEnabled, setVoiceCoachEnabled] = useState(false);
-  const cards = sampleCards;
+  const [cards, setCards] = useState<FlashCardData[]>(sampleCards);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch cards from Notion on mount
+  useEffect(() => {
+    const loadCards = async () => {
+      setIsLoading(true);
+      // Format the database ID with dashes (UUID format)
+      const databaseId = "28c57d62-9295-80b7-b2fc-ff9f9322b8f9";
+      const fetchedCards = await fetchCardsFromNotion(databaseId);
+      setCards(fetchedCards);
+      setIsLoading(false);
+    };
+    loadCards();
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -83,19 +97,25 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-flex-start pb-8">
-        <div className="mb-6 w-full">
-          <CardNavigation
-            currentIndex={currentCardIndex}
-            totalCards={cards.length}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-          />
-        </div>
-        <FlashCard
-          data={cards[currentCardIndex]}
-          key={currentCardIndex}
-          currentTime={seconds}
-        />
+        {isLoading ? (
+          <div className="text-white text-lg">Loading your flashcards from Notion...</div>
+        ) : (
+          <>
+            <div className="mb-6 w-full">
+              <CardNavigation
+                currentIndex={currentCardIndex}
+                totalCards={cards.length}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+              />
+            </div>
+            <FlashCard
+              data={cards[currentCardIndex]}
+              key={currentCardIndex}
+              currentTime={seconds}
+            />
+          </>
+        )}
       </main>
     </div>
   );
