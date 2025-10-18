@@ -6,10 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { ArrowLeft, ExternalLink, Code2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Code2, Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Question {
   id: string;
@@ -23,30 +32,54 @@ interface Question {
   created_at: string;
 }
 
+const ITEMS_PER_PAGE = 12;
+
 export default function Browse() {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+  }, [currentPage, searchQuery]);
 
   const fetchQuestions = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
+      let query = supabase
         .from("questions")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,problem_type.ilike.%${searchQuery}%`);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
       setQuestions(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching questions:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
   };
 
   const renderCodeSolution = (code: string, index: number) => (
@@ -71,7 +104,7 @@ export default function Browse() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
             size="icon"
@@ -79,12 +112,23 @@ export default function Browse() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl font-bold">Browse Problems</h1>
             <p className="text-muted-foreground mt-1">
               Explore all available coding problems
             </p>
           </div>
+        </div>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+          <Input
+            type="text"
+            placeholder="Search by title or topic..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         {loading ? (
@@ -108,28 +152,94 @@ export default function Browse() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {questions.map((question) => (
-              <Card
-                key={question.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setSelectedQuestion(question)}
-              >
-                <CardHeader>
-                  <CardTitle className="text-lg line-clamp-2">
-                    {question.title}
-                  </CardTitle>
-                  {question.problem_type && (
-                    <CardDescription>
-                      <Badge variant="secondary" className="mt-2">
-                        {question.problem_type}
-                      </Badge>
-                    </CardDescription>
-                  )}
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {questions.map((question) => (
+                <Card
+                  key={question.id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => setSelectedQuestion(question)}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-lg line-clamp-2">
+                      {question.title}
+                    </CardTitle>
+                    {question.problem_type && (
+                      <CardDescription>
+                        <Badge variant="secondary" className="mt-2">
+                          {question.problem_type}
+                        </Badge>
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      if (
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
+                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                      ) {
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(pageNum);
+                              }}
+                              isActive={currentPage === pageNum}
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      } else if (
+                        pageNum === currentPage - 2 ||
+                        pageNum === currentPage + 2
+                      ) {
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <span className="px-4">...</span>
+                          </PaginationItem>
+                        );
+                      }
+                      return null;
+                    })}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
 
         <Dialog open={!!selectedQuestion} onOpenChange={() => setSelectedQuestion(null)}>
