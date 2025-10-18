@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { FlashCardData, AttemptHistory } from "@/types/flashcard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,22 +8,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Lightbulb, Code2 } from "lucide-react";
 
-export interface AttemptHistory {
-  date: string;
-  timeTaken: number;
-  solved: boolean;
-}
-
-export interface FlashCardData {
-  id: string;
-  title: string;
-  leetcodeUrl?: string;
-  description: string;
-  code: string;
-  explanation: string;
-  topic: string;
-  attempts?: AttemptHistory[];
-}
+export type { FlashCardData };
 
 interface FlashCardProps {
   data: FlashCardData;

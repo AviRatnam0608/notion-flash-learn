@@ -4,9 +4,9 @@ import { FlashCard, FlashCardData } from "@/components/FlashCard";
 import { StudyTimer } from "@/components/StudyTimer";
 import { CardNavigation } from "@/components/CardNavigation";
 import { VoiceCoach } from "@/components/VoiceCoach";
-import { sampleCards, fetchCardsFromNotion } from "@/lib/notion";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Settings, Home } from "lucide-react";
+import { Settings, Home, Plus } from "lucide-react";
 
 const Study = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +20,7 @@ const Study = () => {
   );
   const [isRunning, setIsRunning] = useState(true);
   const [voiceCoachEnabled, setVoiceCoachEnabled] = useState(false);
-  const [allCards, setAllCards] = useState<FlashCardData[]>(sampleCards);
+  const [allCards, setAllCards] = useState<FlashCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -29,14 +29,35 @@ const Study = () => {
     ? allCards.slice(0, parseInt(questionCount))
     : allCards;
 
-  // Fetch cards from Notion on mount
+  // Fetch cards from database on mount
   useEffect(() => {
     const loadCards = async () => {
       setIsLoading(true);
-      const databaseId = "28c57d62-9295-80b7-b2fc-ff9f9322b8f9";
-      const fetchedCards = await fetchCardsFromNotion(databaseId);
-      setAllCards(fetchedCards);
-      setIsLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from("questions")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const transformedCards: FlashCardData[] = (data || []).map((q) => ({
+          id: q.id,
+          title: q.title,
+          leetcodeUrl: q.problem_url,
+          description: q.problem_type || "",
+          topic: q.problem_type || "General",
+          code: q.code_solution_1,
+          explanation: q.explanation || "",
+          attempts: [],
+        }));
+
+        setAllCards(transformedCards);
+      } catch (error) {
+        console.error("Error loading questions:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadCards();
   }, []);
@@ -166,7 +187,15 @@ const Study = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-flex-start pb-8">
         {isLoading ? (
-          <div className="text-white text-lg">Loading your flashcards from Notion...</div>
+          <div className="text-white text-lg">Loading your flashcards...</div>
+        ) : allCards.length === 0 ? (
+          <div className="text-center space-y-4">
+            <p className="text-white text-lg">No questions found.</p>
+            <Button onClick={() => navigate("/add-question")}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Question
+            </Button>
+          </div>
         ) : (
           <>
             <div className="mb-6 w-full">

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Target, Zap } from "lucide-react";
+import { Clock, Target, Zap, Plus } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 md:p-8">
       <div className="max-w-4xl w-full space-y-8">
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Zap className="w-12 h-12 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold text-white">
@@ -49,6 +49,14 @@ const Index = () => {
           <p className="text-lg md:text-xl text-white/80">
             Choose your study mode and start practicing
           </p>
+          <Button 
+            onClick={() => navigate("/add-question")}
+            size="lg"
+            className="mt-2"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Solved Question
+          </Button>
         </div>
 
         {/* Study Mode Cards */}

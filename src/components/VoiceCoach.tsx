@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AudioRecorder, encodeAudioForAPI, playAudioData } from "@/utils/RealtimeVoice";
-import type { FlashCardData } from "@/lib/notion";
+import type { FlashCardData } from "@/types/flashcard";
 
 interface VoiceCoachProps {
   currentCard: FlashCardData;
