@@ -116,6 +116,11 @@ const AddQuestion = () => {
 
   const allProblemTypes = [...DEFAULT_PROBLEM_TYPES, ...customTypes].sort();
 
+  // Normalize title by removing leading numbers and converting to lowercase
+  const normalizeTitle = (title: string): string => {
+    return title.replace(/^\d+\.\s*/, '').toLowerCase().trim();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -131,6 +136,28 @@ const AddQuestion = () => {
     setIsSubmitting(true);
 
     try {
+      // Check for duplicate questions
+      const normalizedNewTitle = normalizeTitle(formData.title);
+      const { data: existingQuestions, error: fetchError } = await supabase
+        .from("questions")
+        .select("title");
+
+      if (fetchError) throw fetchError;
+
+      const isDuplicate = existingQuestions?.some(
+        (q) => normalizeTitle(q.title) === normalizedNewTitle
+      );
+
+      if (isDuplicate) {
+        toast({
+          title: "Duplicate Question",
+          description: "This question has already been added.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       const { error } = await supabase.from("questions").insert({
