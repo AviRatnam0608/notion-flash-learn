@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Target, Zap, Plus, User } from "lucide-react";
+import { Clock, Target, Zap, Plus, User, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -88,7 +88,15 @@ const Index = () => {
           <p className="text-lg md:text-xl text-white/80">
             Choose your study mode and start practicing
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Button 
+              onClick={() => navigate("/browse")}
+              size="lg"
+              className="mt-2"
+            >
+              <BookOpen className="w-5 h-5 mr-2" />
+              Browse Problems
+            </Button>
             <Button 
               onClick={() => navigate("/add-question")}
               size="lg"
