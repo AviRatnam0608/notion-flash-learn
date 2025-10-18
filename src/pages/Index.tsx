@@ -32,6 +32,7 @@ const Index = () => {
       options: [
         { label: "3 questions", count: 3 },
         { label: "5 questions", count: 5 },
+        { label: "8 questions", count: 8 },
       ],
     },
   ];
