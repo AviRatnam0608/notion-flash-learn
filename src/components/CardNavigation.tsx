@@ -6,6 +6,7 @@ interface CardNavigationProps {
   totalCards: number;
   onPrevious: () => void;
   onNext: () => void;
+  hideTotal?: boolean;
 }
 
 export const CardNavigation = ({
@@ -13,6 +14,7 @@ export const CardNavigation = ({
   totalCards,
   onPrevious,
   onNext,
+  hideTotal = false,
 }: CardNavigationProps) => {
   return (
     <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
@@ -29,18 +31,20 @@ export const CardNavigation = ({
 
       <div className="text-center">
         <p className="text-sm text-white font-medium">
-          Card {currentIndex + 1} of {totalCards}
+          Card {currentIndex + 1}{!hideTotal && ` of ${totalCards}`}
         </p>
-        <div className="flex gap-1 mt-2">
-          {Array.from({ length: totalCards }).map((_, idx) => (
-            <div
-              key={idx}
-              className={`h-1.5 w-8 rounded-full transition-colors ${
-                idx === currentIndex ? "bg-primary" : "bg-muted"
-              }`}
-            />
-          ))}
-        </div>
+        {!hideTotal && (
+          <div className="flex gap-1 mt-2">
+            {Array.from({ length: totalCards }).map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1.5 w-8 rounded-full transition-colors ${
+                  idx === currentIndex ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <Button

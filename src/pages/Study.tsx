@@ -227,6 +227,7 @@ const Study = () => {
                 totalCards={cards.length}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
+                hideTotal={!!countdownMinutes}
               />
             </div>
             <FlashCard
