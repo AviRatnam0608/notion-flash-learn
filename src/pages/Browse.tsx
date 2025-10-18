@@ -36,6 +36,7 @@ interface Question {
   code_solution_2: string | null;
   code_solution_3: string | null;
   explanation: string | null;
+  description: string | null;
   created_at: string;
 }
 
@@ -311,6 +312,16 @@ export default function Browse() {
                 </DialogHeader>
 
                 <div className="space-y-6 mt-4">
+                  {selectedQuestion.description && (
+                    <>
+                      <div>
+                        <h3 className="font-semibold text-lg mb-2">Problem Description</h3>
+                        <p className="text-muted-foreground">{selectedQuestion.description}</p>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
+
                   <div>
                     <Button
                       variant="outline"

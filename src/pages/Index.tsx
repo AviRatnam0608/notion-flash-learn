@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Target, Zap, Plus, User, BookOpen } from "lucide-react";
+import { Clock, Target, Zap, Plus, User, BookOpen, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ const Index = () => {
   const [openCustomTime, setOpenCustomTime] = useState(false);
   const [openCustomCount, setOpenCustomCount] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -74,6 +77,34 @@ const Index = () => {
     }
   };
 
+  const handleBackfillDescriptions = async () => {
+    setIsBackfilling(true);
+    toast({
+      title: "Starting backfill",
+      description: "Fetching descriptions for existing questions...",
+    });
+
+    try {
+      const { data, error } = await supabase.functions.invoke('backfill-leetcode-descriptions');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Backfill complete!",
+        description: `Successfully updated ${data.success} questions. Failed: ${data.failed}`,
+      });
+    } catch (error) {
+      console.error('Error during backfill:', error);
+      toast({
+        title: "Error",
+        description: "Failed to backfill descriptions. Check console for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBackfilling(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 md:p-8">
       {/* Top Right Corner - Auth Button */}
@@ -127,6 +158,18 @@ const Index = () => {
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Solved Question
+            </Button>
+          </div>
+          <div className="flex justify-center mt-4">
+            <Button 
+              onClick={handleBackfillDescriptions}
+              size="sm"
+              variant="ghost"
+              disabled={isBackfilling}
+              className="text-white/60 hover:text-white/80"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isBackfilling ? 'animate-spin' : ''}`} />
+              {isBackfilling ? 'Updating Descriptions...' : 'Update Existing Question Descriptions'}
             </Button>
           </div>
         </div>

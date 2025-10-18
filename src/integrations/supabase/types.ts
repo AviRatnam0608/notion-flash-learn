@@ -100,6 +100,7 @@ export type Database = {
           code_solution_2: string | null
           code_solution_3: string | null
           created_at: string
+          description: string | null
           explanation: string | null
           id: string
           problem_type: string | null
@@ -112,6 +113,7 @@ export type Database = {
           code_solution_2?: string | null
           code_solution_3?: string | null
           created_at?: string
+          description?: string | null
           explanation?: string | null
           id?: string
           problem_type?: string | null
@@ -124,6 +126,7 @@ export type Database = {
           code_solution_2?: string | null
           code_solution_3?: string | null
           created_at?: string
+          description?: string | null
           explanation?: string | null
           id?: string
           problem_type?: string | null

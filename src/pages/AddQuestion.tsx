@@ -150,6 +150,15 @@ const AddQuestion = () => {
     setIsSubmitting(true);
 
     try {
+      // Fetch the LeetCode description
+      console.log('Fetching LeetCode description...');
+      const { data: descData } = await supabase.functions.invoke('fetch-leetcode-description', {
+        body: { problemUrl: formData.problemUrl }
+      });
+
+      const description = descData?.description || 'Description not available';
+      console.log('Fetched description:', description);
+
       // Check for duplicate questions
       const normalizedNewTitle = normalizeTitle(formData.title);
       const { data: existingQuestions, error: fetchError } = await supabase
@@ -182,6 +191,7 @@ const AddQuestion = () => {
         code_solution_2: formData.codeSolution2 || null,
         code_solution_3: formData.codeSolution3 || null,
         explanation: formData.explanation || null,
+        description: description,
         user_id: user?.id || null,
       });
 
