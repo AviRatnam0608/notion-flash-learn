@@ -7,20 +7,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Lightbulb, Code2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export type { FlashCardData };
 
 interface FlashCardProps {
   data: FlashCardData;
   currentTime: number;
+  userId: string | null;
 }
 
-export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
+export const FlashCard = ({ data, currentTime, userId }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showSolutionDialog, setShowSolutionDialog] = useState(false);
   const [showTracking, setShowTracking] = useState(false);
   const [attempts, setAttempts] = useState<AttemptHistory[]>(data.attempts || []);
+  const { toast } = useToast();
 
   // Parse explanation into steps and add topic as first hint
   const parseSteps = (explanation: string, topic: string): string[] => {
@@ -65,7 +69,7 @@ export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleMarkAttempt = (solved: boolean) => {
+  const handleMarkAttempt = async (solved: boolean) => {
     const newAttempt: AttemptHistory = {
       date: new Date().toISOString(),
       timeTaken: currentTime,
@@ -73,6 +77,33 @@ export const FlashCard = ({ data, currentTime }: FlashCardProps) => {
     };
     setAttempts([...attempts, newAttempt]);
     setShowTracking(false);
+
+    // Save to database if user is logged in
+    if (userId) {
+      try {
+        const { error } = await supabase.from("attempt_history").insert({
+          user_id: userId,
+          question_id: data.id,
+          solved,
+          time_taken: currentTime,
+          topic: data.topic,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Progress saved",
+          description: solved ? "Great job solving this problem!" : "Keep practicing, you'll get it!",
+        });
+      } catch (error: any) {
+        console.error("Error saving attempt:", error);
+        toast({
+          title: "Could not save progress",
+          description: "Your progress was not saved to your profile",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleFlip = () => {

@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Target, Zap, Plus } from "lucide-react";
-import { useState } from "react";
+import { Clock, Target, Zap, Plus, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -13,6 +14,19 @@ const Index = () => {
   const [customCount, setCustomCount] = useState("");
   const [openCustomTime, setOpenCustomTime] = useState(false);
   const [openCustomCount, setOpenCustomCount] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const studyModes = [
     {
@@ -74,14 +88,36 @@ const Index = () => {
           <p className="text-lg md:text-xl text-white/80">
             Choose your study mode and start practicing
           </p>
-          <Button 
-            onClick={() => navigate("/add-question")}
-            size="lg"
-            className="mt-2"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Solved Question
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              onClick={() => navigate("/add-question")}
+              size="lg"
+              className="mt-2"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Solved Question
+            </Button>
+            {user ? (
+              <Button 
+                onClick={() => navigate("/profile")}
+                size="lg"
+                variant="outline"
+                className="mt-2"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Profile
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => navigate("/auth")}
+                size="lg"
+                variant="outline"
+                className="mt-2"
+              >
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Study Mode Cards */}

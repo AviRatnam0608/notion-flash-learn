@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      attempt_history: {
+        Row: {
+          attempted_at: string
+          id: string
+          question_id: string
+          solved: boolean
+          time_taken: number | null
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          question_id: string
+          solved: boolean
+          time_taken?: number | null
+          topic: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          question_id?: string
+          solved?: boolean
+          time_taken?: number | null
+          topic?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attempt_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_problem_types: {
         Row: {
           created_at: string
@@ -29,6 +67,30 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
         }
         Relationships: []
       }

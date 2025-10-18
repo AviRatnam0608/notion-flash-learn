@@ -23,6 +23,14 @@ const Study = () => {
   const [allCards, setAllCards] = useState<FlashCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id ?? null);
+    });
+  }, []);
 
   // Filter cards based on question count
   const cards = questionCount
@@ -210,6 +218,7 @@ const Study = () => {
               data={cards[currentCardIndex]}
               key={currentCardIndex}
               currentTime={seconds}
+              userId={userId}
             />
           </>
         )}
