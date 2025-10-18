@@ -42,14 +42,20 @@ const Study = () => {
     const loadCards = async () => {
       setIsLoading(true);
       try {
+        // Fetch questions in random order
         const { data, error } = await supabase
           .from("questions")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .select("*");
 
         if (error) throw error;
 
-        const transformedCards: FlashCardData[] = (data || []).map((q) => ({
+        // Shuffle the questions randomly
+        const shuffled = (data || [])
+          .map((q) => ({ q, sort: Math.random() }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(({ q }) => q);
+
+        const transformedCards: FlashCardData[] = shuffled.map((q) => ({
           id: q.id,
           title: q.title,
           leetcodeUrl: q.problem_url,
@@ -148,47 +154,56 @@ const Study = () => {
   return (
     <div className="min-h-screen flex flex-col p-6 md:p-8">
       {/* Header */}
-      <header className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <Home className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white">
-              {countdownMinutes
-                ? `${countdownMinutes} Minute Challenge`
-                : questionCount
-                ? `${questionCount} Question Practice`
-                : "LeetCode Flash Cards"}
-            </h1>
-            <p className="text-base md:text-lg mt-1.5 text-white/80">
-              {countdownMinutes
-                ? "Solve as many as you can before time runs out"
-                : "Practice active recall with your solutions"}
-            </p>
+      <header className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <Home className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold text-white">
+                {countdownMinutes
+                  ? `${countdownMinutes} Minute Challenge`
+                  : questionCount
+                  ? `${questionCount} Question Practice`
+                  : "LeetCode Flash Cards"}
+              </h1>
+              <p className="text-sm md:text-lg mt-1 text-white/80">
+                {countdownMinutes
+                  ? "Solve as many as you can before time runs out"
+                  : "Practice active recall with your solutions"}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <VoiceCoach
-            currentCard={cards[currentCardIndex]}
-            isEnabled={voiceCoachEnabled}
-            onToggle={() => setVoiceCoachEnabled(!voiceCoachEnabled)}
-          />
-          <StudyTimer
-            seconds={seconds}
-            isRunning={isRunning}
-            onPause={handlePause}
-            onResume={handleResume}
-            onStop={handleStop}
-            onReset={handleReset}
-          />
-          <Button variant="outline" size="icon">
-            <Settings className="w-5 h-5" />
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            {countdownMinutes && (
+              <div className="bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full">
+                <span className="text-sm font-medium text-white">
+                  Solved: {currentCardIndex + 1}
+                </span>
+              </div>
+            )}
+            <VoiceCoach
+              currentCard={cards[currentCardIndex]}
+              isEnabled={voiceCoachEnabled}
+              onToggle={() => setVoiceCoachEnabled(!voiceCoachEnabled)}
+            />
+            <StudyTimer
+              seconds={seconds}
+              isRunning={isRunning}
+              onPause={handlePause}
+              onResume={handleResume}
+              onStop={handleStop}
+              onReset={handleReset}
+            />
+            <Button variant="outline" size="icon">
+              <Settings className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
