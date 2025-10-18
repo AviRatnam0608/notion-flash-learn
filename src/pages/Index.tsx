@@ -1,10 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Clock, Target, Zap, Plus } from "lucide-react";
+import { useState } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [customMinutes, setCustomMinutes] = useState("");
+  const [customCount, setCustomCount] = useState("");
+  const [openCustomTime, setOpenCustomTime] = useState(false);
+  const [openCustomCount, setOpenCustomCount] = useState(false);
 
   const studyModes = [
     {
@@ -33,6 +41,22 @@ const Index = () => {
     if (minutes) params.set("minutes", minutes.toString());
     if (count) params.set("count", count.toString());
     navigate(`/study?${params.toString()}`);
+  };
+
+  const handleCustomTime = () => {
+    const minutes = parseInt(customMinutes);
+    if (minutes > 0) {
+      setOpenCustomTime(false);
+      handleModeSelect(minutes);
+    }
+  };
+
+  const handleCustomCount = () => {
+    const count = parseInt(customCount);
+    if (count > 0) {
+      setOpenCustomCount(false);
+      handleModeSelect(undefined, count);
+    }
   };
 
   return (
@@ -91,6 +115,72 @@ const Index = () => {
                       {option.label}
                     </Button>
                   ))}
+                  {mode.title === "Countdown Mode" && (
+                    <Dialog open={openCustomTime} onOpenChange={setOpenCustomTime}>
+                      <DialogTrigger asChild>
+                        <Button className="w-full" size="lg" variant="outline">
+                          Custom Time
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Set Custom Time</DialogTitle>
+                          <DialogDescription>
+                            Enter the number of minutes for your practice session
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="custom-minutes">Minutes</Label>
+                            <Input
+                              id="custom-minutes"
+                              type="number"
+                              min="1"
+                              placeholder="e.g., 60"
+                              value={customMinutes}
+                              onChange={(e) => setCustomMinutes(e.target.value)}
+                            />
+                          </div>
+                          <Button onClick={handleCustomTime} className="w-full">
+                            Start Practice
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  {mode.title === "Quick Practice" && (
+                    <Dialog open={openCustomCount} onOpenChange={setOpenCustomCount}>
+                      <DialogTrigger asChild>
+                        <Button className="w-full" size="lg" variant="outline">
+                          Custom Count
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Set Custom Question Count</DialogTitle>
+                          <DialogDescription>
+                            Enter the number of questions you want to practice
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="custom-count">Number of Questions</Label>
+                            <Input
+                              id="custom-count"
+                              type="number"
+                              min="1"
+                              placeholder="e.g., 10"
+                              value={customCount}
+                              onChange={(e) => setCustomCount(e.target.value)}
+                            />
+                          </div>
+                          <Button onClick={handleCustomCount} className="w-full">
+                            Start Practice
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </CardContent>
               </Card>
             );
