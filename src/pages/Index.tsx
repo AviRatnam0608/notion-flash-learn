@@ -122,7 +122,7 @@ const Index = () => {
             <Button 
               onClick={() => navigate("/add-question")}
               size="lg"
-              variant="secondary"
+              variant="outline"
               className="mt-2"
             >
               <Plus className="w-5 h-5 mr-2" />
