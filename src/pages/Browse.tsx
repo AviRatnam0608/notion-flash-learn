@@ -300,14 +300,14 @@ export default function Browse() {
             {selectedQuestion && (
               <>
                 <DialogHeader>
-                  <DialogTitle className="text-2xl flex items-start justify-between gap-4">
-                    <span>{selectedQuestion.title}</span>
-                    {selectedQuestion.problem_type && (
-                      <Badge variant="secondary">
-                        {selectedQuestion.problem_type}
-                      </Badge>
-                    )}
+                  <DialogTitle className="text-2xl">
+                    {selectedQuestion.title}
                   </DialogTitle>
+                  {selectedQuestion.problem_type && (
+                    <Badge variant="secondary" className="mt-2 w-fit">
+                      {selectedQuestion.problem_type}
+                    </Badge>
+                  )}
                 </DialogHeader>
 
                 <div className="space-y-6 mt-4">
