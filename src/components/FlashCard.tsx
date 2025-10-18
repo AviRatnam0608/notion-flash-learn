@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Lightbulb, Code2 } from "lucide-react";
+import { Lightbulb, Code2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,7 +23,6 @@ export const FlashCard = ({ data, currentTime, userId }: FlashCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showSolutionDialog, setShowSolutionDialog] = useState(false);
-  const [showTracking, setShowTracking] = useState(false);
   const [attempts, setAttempts] = useState<AttemptHistory[]>(data.attempts || []);
   const { toast } = useToast();
 
@@ -76,7 +76,6 @@ export const FlashCard = ({ data, currentTime, userId }: FlashCardProps) => {
       solved,
     };
     setAttempts([...attempts, newAttempt]);
-    setShowTracking(false);
 
     // Save to database if user is logged in
     if (userId) {
@@ -167,7 +166,7 @@ export const FlashCard = ({ data, currentTime, userId }: FlashCardProps) => {
               {data.description}
             </div>
           </div>
-          <div className="flex flex-col items-center gap-3 pt-8">
+          <div className="flex flex-col items-center gap-4 pt-8">
             <Button
               onClick={handleFlip}
               size="lg"
@@ -176,43 +175,40 @@ export const FlashCard = ({ data, currentTime, userId }: FlashCardProps) => {
               <Lightbulb className="w-5 h-5" />
               Get Hints
             </Button>
-            {!showTracking ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTracking(true)}
-                className="text-xs"
-              >
-                Track Progress
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleMarkAttempt(true)}
-                  className="text-xs"
-                >
-                  I Could Solve It ✓
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleMarkAttempt(false)}
-                  className="text-xs"
-                >
-                  I Could Not Solve It
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowTracking(false)}
-                  className="text-xs"
-                >
-                  Cancel
-                </Button>
+            <TooltipProvider>
+              <div className="flex gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleMarkAttempt(true)}
+                      className="hover:bg-green-500/10 hover:text-green-500 hover:border-green-500"
+                    >
+                      <ThumbsUp className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>I could solve this</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleMarkAttempt(false)}
+                      className="hover:bg-red-500/10 hover:text-red-500 hover:border-red-500"
+                    >
+                      <ThumbsDown className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>I couldn't solve this</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-            )}
+            </TooltipProvider>
           </div>
         </Card>
 
