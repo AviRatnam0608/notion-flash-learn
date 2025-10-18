@@ -7,6 +7,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { ArrowLeft, ExternalLink, Code2, Search } from "lucide-react";
@@ -42,10 +49,32 @@ export default function Browse() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedTopic, setSelectedTopic] = useState<string>("all");
+  const [topics, setTopics] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
 
   useEffect(() => {
     fetchQuestions();
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, selectedTopic]);
+
+  const fetchTopics = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("questions")
+        .select("problem_type")
+        .not("problem_type", "is", null);
+
+      if (error) throw error;
+
+      const uniqueTopics = [...new Set(data.map((q) => q.problem_type).filter(Boolean))] as string[];
+      setTopics(uniqueTopics.sort());
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+    }
+  };
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -61,6 +90,10 @@ export default function Browse() {
 
       if (searchQuery.trim()) {
         query = query.or(`title.ilike.%${searchQuery}%,problem_type.ilike.%${searchQuery}%`);
+      }
+
+      if (selectedTopic !== "all") {
+        query = query.eq("problem_type", selectedTopic);
       }
 
       const { data, error, count } = await query;
@@ -79,6 +112,11 @@ export default function Browse() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleTopicChange = (value: string) => {
+    setSelectedTopic(value);
     setCurrentPage(1);
   };
 
@@ -120,15 +158,30 @@ export default function Browse() {
           </div>
         </div>
 
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-          <Input
-            type="text"
-            placeholder="Search by title or topic..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex gap-3 mb-6 flex-col sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+            <Input
+              type="text"
+              placeholder="Search by title or topic..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={selectedTopic} onValueChange={handleTopicChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Filter by topic" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Topics</SelectItem>
+              {topics.map((topic) => (
+                <SelectItem key={topic} value={topic}>
+                  {topic}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {loading ? (
