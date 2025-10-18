@@ -76,6 +76,28 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 md:p-8">
+      {/* Top Right Corner - Auth Button */}
+      <div className="fixed top-6 right-6 z-10">
+        {user ? (
+          <Button 
+            onClick={() => navigate("/profile")}
+            size="lg"
+            variant="outline"
+          >
+            <User className="w-5 h-5 mr-2" />
+            Profile
+          </Button>
+        ) : (
+          <Button 
+            onClick={() => navigate("/auth")}
+            size="lg"
+            variant="outline"
+          >
+            Sign In
+          </Button>
+        )}
+      </div>
+
       <div className="max-w-4xl w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
@@ -100,31 +122,12 @@ const Index = () => {
             <Button 
               onClick={() => navigate("/add-question")}
               size="lg"
+              variant="secondary"
               className="mt-2"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Solved Question
             </Button>
-            {user ? (
-              <Button 
-                onClick={() => navigate("/profile")}
-                size="lg"
-                variant="outline"
-                className="mt-2"
-              >
-                <User className="w-5 h-5 mr-2" />
-                Profile
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => navigate("/auth")}
-                size="lg"
-                variant="outline"
-                className="mt-2"
-              >
-                Sign In
-              </Button>
-            )}
           </div>
         </div>
 
