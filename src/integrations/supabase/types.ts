@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      questions: {
+        Row: {
+          code_solution_1: string
+          code_solution_2: string | null
+          code_solution_3: string | null
+          created_at: string
+          explanation: string | null
+          id: string
+          problem_type: string | null
+          problem_url: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          code_solution_1: string
+          code_solution_2?: string | null
+          code_solution_3?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          problem_type?: string | null
+          problem_url: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          code_solution_1?: string
+          code_solution_2?: string | null
+          code_solution_3?: string | null
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          problem_type?: string | null
+          problem_url?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
