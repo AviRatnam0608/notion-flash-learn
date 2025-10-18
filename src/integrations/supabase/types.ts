@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_problem_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           code_solution_1: string

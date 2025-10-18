@@ -1,18 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+const DEFAULT_PROBLEM_TYPES = [
+  "Strings and Arrays",
+  "Two Pointers",
+  "Stacks",
+  "Linked Lists",
+  "Binary Search",
+  "Hash Maps and Sets",
+  "Recursion",
+  "Sliding Window",
+  "Binary Trees",
+  "Heaps",
+  "Dynamic Programming",
+  "Miscellaneous",
+];
 
 const AddQuestion = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customTypes, setCustomTypes] = useState<string[]>([]);
+  const [showAddTypeDialog, setShowAddTypeDialog] = useState(false);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [isAddingType, setIsAddingType] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -26,6 +47,74 @@ const AddQuestion = () => {
 
   const [showSolution2, setShowSolution2] = useState(false);
   const [showSolution3, setShowSolution3] = useState(false);
+
+  // Fetch custom problem types
+  useEffect(() => {
+    const fetchCustomTypes = async () => {
+      const { data, error } = await supabase
+        .from("custom_problem_types")
+        .select("name")
+        .order("name");
+
+      if (!error && data) {
+        setCustomTypes(data.map((item) => item.name));
+      }
+    };
+    fetchCustomTypes();
+  }, []);
+
+  const handleAddCustomType = async () => {
+    if (!newTypeName.trim()) {
+      toast({
+        title: "Invalid name",
+        description: "Please enter a problem type name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAddingType(true);
+
+    try {
+      const { error } = await supabase
+        .from("custom_problem_types")
+        .insert({ name: newTypeName.trim() });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Type already exists",
+            description: "This problem type already exists.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      setCustomTypes([...customTypes, newTypeName.trim()].sort());
+      setFormData({ ...formData, problemType: newTypeName.trim() });
+      setNewTypeName("");
+      setShowAddTypeDialog(false);
+
+      toast({
+        title: "Success!",
+        description: "Custom problem type added.",
+      });
+    } catch (error) {
+      console.error("Error adding custom type:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add custom type.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingType(false);
+    }
+  };
+
+  const allProblemTypes = [...DEFAULT_PROBLEM_TYPES, ...customTypes].sort();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,14 +201,61 @@ const AddQuestion = () => {
               {/* Problem Type */}
               <div className="space-y-2">
                 <Label htmlFor="problemType">Problem Type</Label>
-                <Input
-                  id="problemType"
-                  value={formData.problemType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, problemType: e.target.value })
-                  }
-                  placeholder="e.g., Array, Dynamic Programming"
-                />
+                <div className="flex gap-2">
+                  <Select
+                    value={formData.problemType}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, problemType: value })
+                    }
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a problem type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover z-50">
+                      {allProblemTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="outline" size="icon">
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card">
+                      <DialogHeader>
+                        <DialogTitle>Add Custom Problem Type</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="newTypeName">Type Name</Label>
+                          <Input
+                            id="newTypeName"
+                            value={newTypeName}
+                            onChange={(e) => setNewTypeName(e.target.value)}
+                            placeholder="e.g., Graph Algorithms"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddCustomType();
+                              }
+                            }}
+                          />
+                        </div>
+                        <Button
+                          onClick={handleAddCustomType}
+                          disabled={isAddingType}
+                          className="w-full"
+                        >
+                          {isAddingType ? "Adding..." : "Add Type"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
 
               {/* Problem URL */}
