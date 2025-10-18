@@ -121,6 +121,20 @@ const AddQuestion = () => {
     return title.replace(/^\d+\.\s*/, '').toLowerCase().trim();
   };
 
+  const handleReset = () => {
+    setFormData({
+      title: "",
+      problemType: "",
+      problemUrl: "",
+      codeSolution1: "",
+      codeSolution2: "",
+      codeSolution3: "",
+      explanation: "",
+    });
+    setShowSolution2(false);
+    setShowSolution3(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -413,9 +427,19 @@ const AddQuestion = () => {
                 />
               </div>
 
-              <Button type="submit" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Question"}
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleReset}
+                >
+                  Clear All
+                </Button>
+                <Button type="submit" size="lg" disabled={isSubmitting} className="flex-1">
+                  {isSubmitting ? "Saving..." : "Save Question"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
