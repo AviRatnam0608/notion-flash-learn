@@ -158,11 +158,11 @@ const Profile = () => {
           </Card>
         </div>
 
-        {/* Activity Heatmap */}
-        <ActivityHeatmap attempts={attempts} />
-
-        {/* Topic Analysis */}
-        <TopicAnalysis attempts={attempts} />
+        {/* Activity Heatmap & Topic Analysis */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <ActivityHeatmap attempts={attempts} />
+          <TopicAnalysis attempts={attempts} />
+        </div>
 
         {/* AI Suggestions */}
         <AISuggestions attempts={attempts} />
